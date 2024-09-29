@@ -1,16 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { UserButton } from "@clerk/nextjs"; // Import Clerk's UserButton
+import { useRouter } from "next/navigation"; // Correct import for client-side navigation
+import { UserButton } from "@clerk/nextjs";
 
 export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const router = useRouter(); // Initialize the router
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrompt(e.target.value);
   };
+
   const handleGenerateClick = async () => {
+    if (!prompt.trim()) return; // Prevent generation for empty prompt
+
     setIsGenerating(true);
     try {
       const response = await fetch(
@@ -38,8 +43,10 @@ export default function Home() {
       }
 
       const data = await response.json();
-
       console.log(data.choices[0].message);
+
+      // Redirect to flashcards page after generation
+      router.push("/flashcards"); // Use router.push for client-side navigation
     } catch (error) {
       console.error("Error generating flashcards:", error);
     } finally {
@@ -87,6 +94,7 @@ export default function Home() {
           <button
             onClick={handleGenerateClick}
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r"
+            disabled={isGenerating || !prompt.trim()} // Disable button if prompt is empty or generating
           >
             {isGenerating ? "Generating..." : "Generate"}
           </button>
@@ -95,13 +103,3 @@ export default function Home() {
     </>
   );
 }
-//{
-//  "role": "assistant",
-//  "content": "Here are 5 distinct flashcards on the topic of ocean:\n\n
-//**Flashcard 1**\n\n**Question:** What is the largest ocean on Earth?\n**Answer:** Pacific Ocean\n\n
-//**Flashcard 2**\n\n**Question:** What is the deepest part of the ocean?\n**Answer:** Mariana Trench (approx. 36,000 feet deep)\n\n
-//**Flashcard 3**\n\n**Question:** What is the process by which plants and animals produce nutrients in the ocean?\n**Answer:** Photosynthesis\n\n
-//**Flashcard 4**\n\n**Question:** What is the term for a large wave caused by earthquakes, landslides, or volcanic eruptions?\n**Answer:** Tsunami\n\n
-//**Flashcard 5**\n\n**Question:** What is the layer of the ocean where sunlight barely penetrates?\n**Answer:** Deep-sea zone (also known as the abyssal zone)\n\nLet me know if you need more!",
-//  "refusal": ""
-//}
